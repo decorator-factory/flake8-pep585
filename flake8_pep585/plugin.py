@@ -2,7 +2,7 @@ import ast
 from collections.abc import Iterator
 
 from flake8_pep585.flake_diagnostic import FlakeDiagnostic
-from flake8_pep585.visitor import ImportVisitor
+from flake8_pep585.rules import DirectImportRule
 
 
 class Pep585Plugin:
@@ -14,5 +14,5 @@ class Pep585Plugin:
 
     def __iter__(self) -> Iterator[FlakeDiagnostic]:
         diagnostics: list[FlakeDiagnostic] = []
-        ImportVisitor(diagnostics.append).visit(self._tree)
+        DirectImportRule(diagnostics.append).visit(self._tree)
         yield from diagnostics

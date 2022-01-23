@@ -48,7 +48,7 @@ _NAME_REPLACEMENTS = MappingProxyType({
 _MESSAGE = "PEA001: typing.{0} is deprecated, use {1} instead. See PEP 585 for details"
 
 
-class ImportVisitor(ast.NodeVisitor):
+class DirectImportRule(ast.NodeVisitor):
     def __init__(self, report_diagnostic: Callable[[FlakeDiagnostic], None]):
         self._report_diagnostic = report_diagnostic
 
