@@ -48,8 +48,23 @@ _NAME_REPLACEMENTS = MappingProxyType({
 _MESSAGE = "PEA001: typing.{0} is deprecated, use {1} instead. See PEP 585 for details"
 
 
-class DirectImportRule(ast.NodeVisitor):
-    def __init__(self, report_diagnostic: Callable[[FlakeDiagnostic], None]):
+ReportCallback = Callable[[FlakeDiagnostic], None]
+
+
+def _report_if_deprecated(
+    node: ast.AST,
+    imported_name: str,
+    report: ReportCallback,
+) -> None:
+    replacement = _NAME_REPLACEMENTS.get(imported_name)
+    if replacement is None:
+        return
+    message = _MESSAGE.format(imported_name, replacement)
+    report(FlakeDiagnostic(node.lineno, node.col_offset, message))
+
+
+class DirectImport(ast.NodeVisitor):
+    def __init__(self, report_diagnostic: ReportCallback):
         self._report_diagnostic = report_diagnostic
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:  # noqa: N802
@@ -57,10 +72,24 @@ class DirectImportRule(ast.NodeVisitor):
             return
 
         for alias in node.names:
-            source = alias.name
-            replacement = _NAME_REPLACEMENTS.get(source)
-            if replacement is None:
-                continue
-            message = _MESSAGE.format(source, replacement)
-            diagnostic = FlakeDiagnostic(node.lineno, node.col_offset, message)
-            self._report_diagnostic(diagnostic)
+            _report_if_deprecated(node, alias.name, self._report_diagnostic)
+
+
+class QualifiedImport(ast.NodeVisitor):
+    def __init__(self, report_diagnostic: ReportCallback):
+        self._report_diagnostic = report_diagnostic
+        self._typing_aliases: set[str] = set()
+
+    def visit_Import(self, node: ast.Import) -> None:  # noqa: N802
+        for alias in node.names:
+            if alias.name == "typing":
+                self._typing_aliases.add(alias.asname or "typing")
+
+    def visit_Attribute(self, node: ast.Attribute) -> None:  # noqa: N802
+        if not isinstance(node.value, ast.Name):
+            return
+
+        if node.value.id not in self._typing_aliases:
+            return
+
+        _report_if_deprecated(node, node.attr, self._report_diagnostic)
