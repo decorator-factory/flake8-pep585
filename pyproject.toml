@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "flake8-pep585"
-version = "0.1.4"
+version = "0.1.4.1"
 description = "flake8 plugin to enforce new-style type hints (PEP 585)"
 authors = ["decorator-factory <decorator-factory@yandex.ru>"]
 license = "MPL-2.0"
