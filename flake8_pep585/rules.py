@@ -40,6 +40,7 @@ _NAME_REPLACEMENTS = MappingProxyType({
     "ItemsView": "collections.abc.ItemsView",
     "ValuesView": "collections.abc.ValuesView",
     "ContextManager": "contextlib.AbstractContextManager",
+    "AsyncContextManager": "contextlib.AbstractAsyncContextManager",
     "Pattern": "re.Pattern",
     "Match": "re.Match",
 })
