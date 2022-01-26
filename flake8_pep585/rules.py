@@ -46,7 +46,7 @@ _NAME_REPLACEMENTS = MappingProxyType({
 })
 
 
-_MESSAGE = "PEA001: typing.{0} is deprecated, use {1} instead. See PEP 585 for details"
+_MESSAGE = "PEA001 typing.{0} is deprecated, use {1} instead. See PEP 585 for details"
 
 
 ReportCallback = Callable[[FlakeDiagnostic], None]
