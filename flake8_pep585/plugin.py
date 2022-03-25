@@ -12,7 +12,7 @@ rule_classes = (
 
 class Pep585Plugin:
     name = "flake8-pep585"
-    version = "0.1.5"
+    version = "0.1.5.1"
 
     def __init__(self, tree: ast.Module) -> None:
         self._tree = tree
