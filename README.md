@@ -17,7 +17,7 @@ With PEP 585, you can now use classes already present in the standard library. F
 - For a callable taking a `float` and returning an `int`, use `collections.abc.Callable[[float], int]`
 
 `typing.List`, `typing.Callable` etc. are now deprecated. This is pretty hard to discover, since these
-imports don't cause a deprecation warning. IDE don't help either: the "auto-import" feature often suggests
+imports don't cause a deprecation warning. IDEs don't help either: the "auto-import" feature often suggests
 importing a deprecated item.
 
 This plugin lets you find these deprecated imports.
