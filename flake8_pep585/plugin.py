@@ -30,7 +30,7 @@ class ImportVisitor(ast.NodeVisitor):
 
 class Pep585Plugin:
     name = "flake8-pep585"
-    version = "0.1.5.1"
+    version = "0.1.6"
     _activation = "auto"
 
     def __init__(self, tree: ast.Module) -> None:
