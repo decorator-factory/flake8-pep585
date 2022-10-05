@@ -14,57 +14,62 @@ rule_classes = (
 
 
 class ImportVisitor(ast.NodeVisitor):
-    """Import visitor."""
-
-    enabled: bool
-
     def __init__(self) -> None:
-        self.enabled = False
+        self._found_import = False
+
+    def found_pep563_import(self) -> bool:
+        return self._found_import
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:  # noqa: N802
-        if (self.enabled or ("__future__" != node.module)):
+        if self._found_import or node.module != "__future__":
             return
 
-        for alias in node.names:
-            if ("annotations" == alias.name):
-                self.enabled = True
-                return
+        if "annotations" in {alias.name for alias in node.names}:
+            self._found_import = True
 
 
 class Pep585Plugin:
     name = "flake8-pep585"
     version = "0.1.5.1"
-    activation = "auto"
-    _enabled: bool
-
-    @classmethod
-    def add_options(cls, option_manager) -> None:
-        option_manager.add_option("--pep585-activation", default="auto",
-                                  action="store", parse_from_config=True,
-                                  choices=("auto", "always", "never"), dest="pep585_activation",
-                                  help="Activate plugin, auto checks for 'from __future__ import annotations' (default: auto)")
-
-    @classmethod
-    def parse_options(cls, options) -> None:
-        if ((sys.version_info.major == 3) and (sys.version_info.minor < 7)):
-            cls.activation = "never"
-        elif ((sys.version_info.major == 3) and (sys.version_info.minor >= 9)):
-            cls.activation = "always"
-        else:
-            cls.activation = options.pep585_activation
+    _activation = "auto"
 
     def __init__(self, tree: ast.Module) -> None:
         self._tree = tree
-        self._enabled = ("always" == self.activation)
+
+    @classmethod
+    def add_options(cls, option_manager) -> None:
+        option_manager.add_option(
+            "--pep585-activation",
+            default="auto",
+            action="store",
+            parse_from_config=True,
+            choices=("auto", "always", "never"),
+            dest="pep585_activation",
+            help=(
+                "Whether to enable plugin on Python 3.7 and 3.8 (always), only "
+                + "enable if 'from __future__ import annotations' is present (auto, "
+                + "default) or disable (never)"
+            ),
+        )
+
+    @classmethod
+    def parse_options(cls, options) -> None:
+        if sys.version_info < (3, 7):
+            cls._activation = "never"
+        elif sys.version_info >= (3, 9):
+            cls._activation = "always"
+        else:
+            cls._activation = options.pep585_activation
 
     def __iter__(self) -> Iterator[FlakeDiagnostic]:
-        if ((not self._enabled) and ("never" != self.activation)):
+        if self._activation == "never":
+            return
+
+        if self._activation == "auto":
             import_visitor = ImportVisitor()
             import_visitor.visit(self._tree)
-            self._enabled = import_visitor.enabled
-
-        if (not self._enabled):
-            return
+            if not import_visitor.found_pep563_import():
+                return
 
         diagnostics: list[FlakeDiagnostic] = []
         report = diagnostics.append

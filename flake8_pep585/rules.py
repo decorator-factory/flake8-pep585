@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import ast
-from typing import Callable  # noqa: PEA001
 from types import MappingProxyType
+from typing import Callable  # noqa: PEA001
 
 from flake8_pep585.flake_diagnostic import FlakeDiagnostic
 
