@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 from typing import (
     Match,
     Pattern,
-    Callable,
     Callable,
     Iterable,
     ChainMap,
