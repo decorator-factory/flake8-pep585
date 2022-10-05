@@ -52,3 +52,19 @@ PEA001 typing.Match is deprecated, use re.Match instead. See PEP 585 for details
 1. Make sure you have `flake8` installed
 2. Run `pip install flake8-pep585`
 3. Run `flake8` on your code
+
+# Configuration
+
+Via your `setup.cfg` file:
+```toml
+[flake8]
+pep585-activation = always  # "always", "auto" or "never"
+```
+
+Via the CLI:
+```
+python -m flake8 --pep585-activation=always your_project/file.py
+```
+
+This only changes how the plugin behaves on Python 3.7.x and Python 3.8.x. By default ("auto"), it will be enabled
+if a `from __future__ import annotations` line is found.
