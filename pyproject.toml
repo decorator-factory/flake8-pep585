@@ -11,7 +11,7 @@ repository = "https://github.com/decorator-factory/flake8-pep585"
 python = "^3.7"
 
 [tool.poetry.dev-dependencies]
-wemake-python-styleguide = "0.16.0"
+wemake-python-styleguide = "^0.17.0"
 
 [tool.poetry.plugins."flake8.extension"]
 PEA = "flake8_pep585.plugin:Pep585Plugin"
