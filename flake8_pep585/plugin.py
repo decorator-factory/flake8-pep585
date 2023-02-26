@@ -30,8 +30,9 @@ class ImportVisitor(ast.NodeVisitor):
 
 class Pep585Plugin:
     name = "flake8-pep585"
-    version = "0.1.6"
+    version = "0.1.7"
     _activation = "auto"
+    _whitelisted: "frozenset[str]" = frozenset()
 
     def __init__(self, tree: ast.Module) -> None:
         self._tree = tree
@@ -52,6 +53,15 @@ class Pep585Plugin:
             ),
         )
 
+        option_manager.add_option(
+            "--pep585-whitelisted-symbols",
+            default="",
+            action="store",
+            parse_from_config=True,
+            dest="pep585_whitelisted_symbols",
+            help="Symbols from `typing` to whitelist from PEP585 checks",
+        )
+
     @classmethod
     def parse_options(cls, options) -> None:
         if sys.version_info < (3, 7):
@@ -60,6 +70,12 @@ class Pep585Plugin:
             cls._activation = "always"
         else:
             cls._activation = options.pep585_activation
+
+        cls._whitelisted = frozenset(options.pep585_whitelisted_symbols.split())
+        invalid_whitelist_items = {opt for opt in cls._whitelisted if "typing" in opt}
+        if invalid_whitelist_items:
+            error = "Invalid whitelist item: {0}. Use `X` instead of `typing.X`"
+            raise RuntimeError(error.format(invalid_whitelist_items))
 
     def __iter__(self) -> Iterator[FlakeDiagnostic]:
         if self._activation == "never":
@@ -74,5 +90,5 @@ class Pep585Plugin:
         diagnostics: list[FlakeDiagnostic] = []
         report = diagnostics.append
         for rule_cls in rule_classes:
-            rule_cls(report).visit(self._tree)
+            rule_cls(report, whitelist=self._whitelisted).visit(self._tree)
         yield from diagnostics

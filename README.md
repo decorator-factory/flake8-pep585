@@ -59,6 +59,12 @@ Via your `setup.cfg` file:
 ```toml
 [flake8]
 pep585-activation = always  # "always", "auto" or "never"
+
+# Symbols that you're okay with being imported from `typing`
+pep585-whitelisted-symbols =
+    Callable
+    Match
+    Pattern
 ```
 
 Via the CLI:

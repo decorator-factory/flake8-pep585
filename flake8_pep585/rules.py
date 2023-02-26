@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import ast
 from types import MappingProxyType
-from typing import Callable  # noqa: PEA001
+from typing import Callable, Collection  # noqa: PEA001
 
 from flake8_pep585.flake_diagnostic import FlakeDiagnostic
 
@@ -67,20 +67,23 @@ def _report_if_deprecated(
 
 
 class DirectImport(ast.NodeVisitor):
-    def __init__(self, report_diagnostic: ReportCallback):
+    def __init__(self, report_diagnostic: ReportCallback, whitelist: Collection[str]):
         self._report_diagnostic = report_diagnostic
+        self._whitelist = whitelist
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:  # noqa: N802
         if node.module != "typing":
             return
 
         for alias in node.names:
-            _report_if_deprecated(node, alias.name, self._report_diagnostic)
+            if alias.name not in self._whitelist:
+                _report_if_deprecated(node, alias.name, self._report_diagnostic)
 
 
 class QualifiedImport(ast.NodeVisitor):
-    def __init__(self, report_diagnostic: ReportCallback):
+    def __init__(self, report_diagnostic: ReportCallback, whitelist: Collection[str]):
         self._report_diagnostic = report_diagnostic
+        self._whitelist = whitelist
         self._typing_aliases: set[str] = set()
 
     def visit_Import(self, node: ast.Import) -> None:  # noqa: N802
@@ -93,6 +96,9 @@ class QualifiedImport(ast.NodeVisitor):
             return
 
         if node.value.id not in self._typing_aliases:
+            return
+
+        if node.attr in self._whitelist:
             return
 
         _report_if_deprecated(node, node.attr, self._report_diagnostic)
