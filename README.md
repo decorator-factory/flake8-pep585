@@ -56,7 +56,7 @@ PEA001 typing.Match is deprecated, use re.Match instead. See PEP 585 for details
 # Configuration
 
 Via your `setup.cfg` file:
-```toml
+```ini
 [flake8]
 pep585-activation = always  # "always", "auto" or "never"
 
